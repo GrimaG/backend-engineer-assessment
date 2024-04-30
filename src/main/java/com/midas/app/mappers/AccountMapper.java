@@ -29,7 +29,7 @@ public class AccountMapper {
         .email(account.getEmail())
         .createdAt(account.getCreatedAt())
         .updatedAt(account.getUpdatedAt())
-        .providerType(account.getProviderType().name())
+        .providerType(account.getProviderType().name().toLowerCase())
         .providerId(account.getProviderId());
 
     return accountDto;

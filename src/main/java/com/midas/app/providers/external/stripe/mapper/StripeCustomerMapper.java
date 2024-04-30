@@ -44,16 +44,34 @@ public class StripeCustomerMapper {
   /**
    * mapToAccount maps a customer to an account.
    *
-   * @param customer is the customer to be mapped
+   * @param customer is the customer returned from the provider.
+   * @param details is the details of the account to be created.
    * @return Account
    */
-  public static Account mapToAccount(Customer customer) {
+  public static Account mapToAccount(Customer customer, CreateAccount details) {
     return Account.builder()
-        .firstName(customer.getName())
-        .lastName(customer.getName())
-        .email(customer.getEmail())
         .providerType(ProviderType.STRIPE)
         .providerId(customer.getId())
+        .email(customer.getEmail())
+        .firstName(details.getFirstName())
+        .lastName(details.getLastName())
+        .build();
+  }
+
+  /**
+   * mapToAccount maps a customer to an account.
+   *
+   * @param customer is the customer returned from the provider.
+   * @param details is the details of the account to be updated.
+   * @return Account
+   */
+  public static Account mapToAccount(Customer customer, UpdateAccount details) {
+    return Account.builder()
+        .providerType(ProviderType.STRIPE)
+        .providerId(customer.getId())
+        .email(customer.getEmail())
+        .firstName(details.getFirstName())
+        .lastName(details.getLastName())
         .build();
   }
 }
