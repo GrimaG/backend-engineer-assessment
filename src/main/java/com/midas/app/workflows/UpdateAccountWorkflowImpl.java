@@ -6,7 +6,6 @@ import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.spring.boot.WorkflowImpl;
 import io.temporal.workflow.Workflow;
-import jakarta.transaction.Transactional;
 import java.time.Duration;
 import org.slf4j.Logger;
 
@@ -20,36 +19,56 @@ public class UpdateAccountWorkflowImpl implements UpdateAccountWorkflow {
         Workflow.newActivityStub(UpdateAccountActivity.class, getOptions());
   }
 
+  /**
+   * getOptions returns the activity options.
+   *
+   * @return ActivityOptions
+   */
   private ActivityOptions getOptions() {
     return ActivityOptions.newBuilder()
         .setStartToCloseTimeout(Duration.ofSeconds(10))
         .setRetryOptions(
             RetryOptions.newBuilder()
                 .setInitialInterval(Duration.ofSeconds(2))
-                .setMaximumAttempts(3)
+                .setMaximumAttempts(1)
                 .build())
         .build();
   }
 
   @Override
-  @Transactional
   public Account updateAccount(Account details) {
     Account existingAccount = updateAccountActivity.findAccount(details);
-    updateAccountActivity.updatePaymentAccount(details);
-    Account account = updateAccountActivity.updateAccount(details);
-    updateAccountActivity.updatePaymentAccount(details);
-    log.info("Account saved: {}", account.getEmail());
+    Account updatedAccount = updateAccountFields(existingAccount, details);
+    updateAccountActivity.updatePaymentAccount(updatedAccount);
+    Account account = updateAccountActivity.updateAccount(updatedAccount);
+    log.info("Account updated: {}", account.getId());
     return account;
   }
 
+  /**
+   * updateAccountFields updates the fields of an account.
+   *
+   * @param existingAccount is the existing account.
+   * @param newAccount is the new account.
+   * @return Account
+   */
   private Account updateAccountFields(Account existingAccount, Account newAccount) {
-    if (!newAccount.getEmail().isEmpty() && !newAccount.getEmail().isBlank()) {
-      existingAccount.setEmail(newAccount.getEmail());
-    }
-    if (!newAccount.getFirstName().isEmpty() && !newAccount.getFirstName().isBlank())
-      existingAccount.setFirstName(newAccount.getFirstName());
-    if (!newAccount.getLastName().isEmpty() && !newAccount.getLastName().isBlank())
-      existingAccount.setLastName(newAccount.getLastName());
+    existingAccount.setEmail(getUpdatedField(newAccount.getEmail(), existingAccount.getEmail()));
+    existingAccount.setFirstName(
+        getUpdatedField(newAccount.getFirstName(), existingAccount.getFirstName()));
+    existingAccount.setLastName(
+        getUpdatedField(newAccount.getLastName(), existingAccount.getLastName()));
     return existingAccount;
+  }
+
+  /**
+   * getUpdatedField returns the updated field.
+   *
+   * @param newField is the new field.
+   * @param existingField is the existing field.
+   * @return String
+   */
+  private String getUpdatedField(String newField, String existingField) {
+    return newField != null && !newField.isBlank() ? newField : existingField;
   }
 }

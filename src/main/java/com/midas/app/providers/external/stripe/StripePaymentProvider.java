@@ -45,14 +45,13 @@ public class StripePaymentProvider implements PaymentProvider {
     CustomerCreateParams params = StripeCustomerMapper.map(details);
     try {
       Customer customer = client.customers().create(params);
-      return StripeCustomerMapper.mapToAccount(customer);
+      return StripeCustomerMapper.mapToAccount(customer, details);
     } catch (Exception e) {
       String errorMessage =
           "Error creating Stripe account for user with email: "
               + details.getEmail()
               + " error: "
               + e.getMessage();
-      ;
       logger.error(errorMessage, e);
       throw new ApiException(HttpStatus.INTERNAL_SERVER_ERROR, errorMessage);
     }
@@ -71,14 +70,13 @@ public class StripePaymentProvider implements PaymentProvider {
     StripeClient client = new StripeClient(configuration.getApiKey());
     CustomerUpdateParams params = StripeCustomerMapper.map(details);
     try {
-      System.out.println("details.getUserId() = " + details.getUserId());
       Customer resource = client.customers().retrieve(details.getUserId());
       if (resource == null) {
         logger.error("Stripe Account not found for user with id: {}", details.getUserId());
         throw new ApiException(HttpStatus.NOT_FOUND, "Strip Account not found");
       }
       Customer customer = resource.update(params);
-      return StripeCustomerMapper.mapToAccount(customer);
+      return StripeCustomerMapper.mapToAccount(customer, details);
     } catch (Exception e) {
       // TODO: map all StripeException to ApiExceptions
       String errorMessage =

@@ -27,7 +27,7 @@ public class UpdateAccountActivityImpl implements UpdateAccountActivity {
   public Account findAccount(Account account) {
     return accountRepository
         .findById(account.getId())
-        .orElseThrow(() -> new ResourceNotFoundException("Account not found"));
+        .orElseThrow(() -> new ResourceNotFoundException("Account not found: " + account.getId()));
   }
 
   @Override

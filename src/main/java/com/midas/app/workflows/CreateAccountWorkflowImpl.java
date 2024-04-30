@@ -19,13 +19,18 @@ public class CreateAccountWorkflowImpl implements CreateAccountWorkflow {
         Workflow.newActivityStub(CreateAccountActivity.class, getOptions());
   }
 
+  /**
+   * getOptions returns the activity options.
+   *
+   * @return ActivityOptions
+   */
   private ActivityOptions getOptions() {
     return ActivityOptions.newBuilder()
         .setStartToCloseTimeout(Duration.ofSeconds(10))
         .setRetryOptions(
             RetryOptions.newBuilder()
                 .setInitialInterval(Duration.ofSeconds(2))
-                .setMaximumAttempts(3)
+                .setMaximumAttempts(1)
                 .build())
         .build();
   }
